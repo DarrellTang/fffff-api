@@ -49,24 +49,16 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
   slogger.Infof("%s",rows)
 	defer rows.Close()
 
-  result := rows.Next()
-	// var result []map[string]interface{}
-	// for rows.Next() {
-	// 	var id int
-	// 	var name string
-	// 	err = rows.Scan(&id, &name)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// 	row := map[string]interface{}{
-	// 		"id":   id,
-	// 		"name": name,
-	// 	}
-	// 	result = append(result, row)
-	// }
+  var json []byte
+	for rows.Next() {
+		err = rows.Scan(&json)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 
-	json.NewEncoder(w).Encode(result)
+  w.Write(json)
 }
 
 func hqlist(w http.ResponseWriter, r *http.Request) {
