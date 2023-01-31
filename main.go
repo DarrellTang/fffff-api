@@ -5,14 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 var db *sql.DB
+var slogger *zap.SugaredLogger
 
 func main() {
+	InitLogger()
+	defer slogger.Sync()
+
 	var err error
+	slogger.Infof("Connecting to postgres db")
 	connStr := fmt.Sprintf("user=postgres password=%s dbname=postgres sslmode=disable host=postgres", os.Getenv("PGPASSWORD"))
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
@@ -24,6 +31,7 @@ func main() {
 	http.HandleFunc("/normal", nqlist)
 	http.HandleFunc("/high", hqlist)
 
+	slogger.Infof("Serving and listening on port 8080")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println(err)
@@ -83,4 +91,9 @@ func hqlist(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(result)
+}
+
+func InitLogger() {
+	logger, _ := zap.NewDevelopment()
+	slogger = logger.Sugar()
 }
