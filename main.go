@@ -28,8 +28,8 @@ func main() {
 	}
 	defer db.Close()
 
-	http.HandleFunc("/normal", nqlist)
-	http.HandleFunc("/high", hqlist)
+	http.HandleFunc("/nq", nqlist)
+	http.HandleFunc("/hq", hqlist)
 
 	slogger.Infof("Serving and listening on port 8080")
 	err = http.ListenAndServe(":8080", nil)
@@ -46,18 +46,17 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
     slogger.Infof("%s",err)
 		return
 	}
-  slogger.Infof("%s",rows)
 	defer rows.Close()
 
   var json []byte
-	for rows.Next() {
-		err = rows.Scan(&json)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-	}
+	rows.Next()
+  err = rows.Scan(&json)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
 
+  slogger.Infof("Writing json to http response")
   w.Write(json)
 }
 
@@ -68,26 +67,18 @@ func hqlist(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-  slogger.Infof("%s",rows)
 	defer rows.Close()
 
-	var result []map[string]interface{}
-	for rows.Next() {
-		var id int
-		var value string
-		err = rows.Scan(&id, &value)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		row := map[string]interface{}{
-			"id":    id,
-			"value": value,
-		}
-		result = append(result, row)
-	}
+  var json []byte
+	rows.Next()
+  err = rows.Scan(&json)
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
 
-	json.NewEncoder(w).Encode(result)
+  slogger.Infof("Writing json to http response")
+  w.Write(json)
 }
 
 func InitLogger() {
