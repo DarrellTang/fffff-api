@@ -23,7 +23,7 @@ func main() {
 	connStr := fmt.Sprintf("user=postgres password=%s dbname=postgres sslmode=disable host=postgres", os.Getenv("PGPASSWORD"))
 	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		fmt.Println(err)
+    slogger.Infof("%s",err)
 		return
 	}
 	defer db.Close()
@@ -34,15 +34,16 @@ func main() {
 	slogger.Infof("Serving and listening on port 8080")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
-		fmt.Println(err)
+    slogger.Infof("%s",err)
 		return
 	}
 }
 
 func nqlist(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT * FROM NqShoppingList")
+	slogger.Infof("Retrieving normal quality shopping list from db")
+	rows, err := db.Query("SELECT json_agg(NqShoppingList) FROM NqShoppingList")
 	if err != nil {
-		fmt.Println(err)
+    slogger.Infof("%s",err)
 		return
 	}
 	defer rows.Close()
@@ -67,7 +68,8 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
 }
 
 func hqlist(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT * FROM HqShoppingList")
+	slogger.Infof("Retrieving high quality shopping list from db")
+	rows, err := db.Query("SELECT json_agg(HqShoppingList) FROM HqShoppingList")
 	if err != nil {
 		fmt.Println(err)
 		return
