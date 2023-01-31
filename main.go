@@ -46,6 +46,7 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
     slogger.Infof("%s",err)
 		return
 	}
+  slogger.Infof("%s",rows)
 	defer rows.Close()
 
 	var result []map[string]interface{}
@@ -74,6 +75,7 @@ func hqlist(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
+  slogger.Infof("%s",rows)
 	defer rows.Close()
 
 	var result []map[string]interface{}
