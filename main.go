@@ -56,6 +56,7 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
   }
 
   slogger.Infof("Writing json to http response")
+  w.Header().Set("Content-Type", "application/json")
   w.Write(json)
 }
 
@@ -77,6 +78,7 @@ func hqlist(w http.ResponseWriter, r *http.Request) {
   }
 
   slogger.Infof("Writing json to http response")
+  w.Header().Set("Content-Type", "application/json")
   w.Write(json)
 }
 
