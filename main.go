@@ -30,8 +30,8 @@ func main() {
 	http.HandleFunc("/nq", nqlist)
 	http.HandleFunc("/hq", hqlist)
 
-	slogger.Infof("Serving and listening on port 8080")
-	err = http.ListenAndServe(":8080", nil)
+	slogger.Infof("Serving and listening on port 80")
+	err = http.ListenAndServe(":80", nil)
 	if err != nil {
     slogger.Infof("%s",err)
 		return
