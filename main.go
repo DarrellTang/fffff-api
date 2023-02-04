@@ -70,11 +70,14 @@ func hqlist(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
   var json []byte
-	rows.Next()
-  err = rows.Scan(&json)
-  if err != nil {
-    fmt.Println(err)
-    return
+  if rows.Next() {
+    err = rows.Scan(&json)
+    if err != nil {
+      fmt.Println(err)
+      return
+    }
+  } else {
+    json = []byte("{}")
   }
 
   slogger.Infof("Writing json to http response")
