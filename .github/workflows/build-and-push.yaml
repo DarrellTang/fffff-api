@@ -7,7 +7,7 @@
 # To get a newer version, you will need to update the SHA.
 # You can also reference a tag or branch, but the action may change without warning.
 
-name: Build & Push Docker Image
+name: Build, Push & Deploy
 
 on:
   push:
@@ -17,6 +17,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  REPO_NAME: darrelltang/argocd-k3s
 
 jobs:
   build-and-push-image:
@@ -24,10 +25,13 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      tag: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
 
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
@@ -49,3 +53,31 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+
+  deploy-new-image:
+    needs: build-and-push-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout ${{ env.REPO_NAME }} repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.REPO_NAME }}
+          token: ${{ secrets.DT_PAT }}
+          ref: main
+
+      - name: Update Image Version
+        id: imgupd
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq eval '.spec.template.spec.containers[0].image = "${{ needs.build-and-push-image.outputs.tag }}"' -i ./fffff/api-deploy.yaml
+
+      - name: Commit and push changes to Kubernetes manifest
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update api image tag to ${{ needs.build-and-push-image.outputs.tag }}"
+          push: true
