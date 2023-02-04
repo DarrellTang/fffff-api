@@ -55,6 +55,11 @@ func nqlist(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  if len(json) == 0 {
+    slogger.Infof("Writing empty json to http response")
+    json = []byte("{}")
+  }
+
   slogger.Infof("Writing json to http response")
   w.Header().Set("Content-Type", "application/json")
   w.Write(json)
